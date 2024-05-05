@@ -73,7 +73,7 @@ class NagadPaymentController extends Controller
         return $ResultArray;
     }
 
-    public function get_client_ip()
+    function get_client_ip()
     {
         $ipaddress = '';
         if (isset($_SERVER['HTTP_CLIENT_IP']))
@@ -102,7 +102,7 @@ class NagadPaymentController extends Controller
     }
 
 
-    public function nagadPay() // create transaction
+    public function nagadPay()
     {
         $MerchantID = "683002007104225";
         $amount = "100.00";
@@ -117,7 +117,7 @@ class NagadPaymentController extends Controller
 
         $_SESSION['orderId'] = $OrderId;
 
-        $merchantCallbackURL = "http://127.0.0.1:8000/api/nagad-callback";
+        $merchantCallbackURL = "http://127.0.0.1:8000/api/callback";
 
         $SensitiveData = array(
             'merchantId' => $MerchantID,
@@ -193,7 +193,8 @@ class NagadPaymentController extends Controller
                     // var_dump($Result_Data_Order); exit;
 
                     if ($Result_Data_Order['status'] == "Success") {
-                        return response()->json(['success' => $Result_Data_Order]);
+                        $url = json_encode($Result_Data_Order['callBackUrl']);
+                        return  $url;
                     } else {
                         return response()->json(['error' => $Result_Data_Order]);
                     }
@@ -205,7 +206,7 @@ class NagadPaymentController extends Controller
     }
 
     public function callback(Request $request)
-    {;
+    {
         $Query_String  = explode("&", explode("?", $_SERVER['REQUEST_URI'])[1]);
         $payment_ref_id = substr($Query_String[2], 15);
         $url = "http://sandbox.mynagad.com:10080/remote-payment-gateway-1.0/api/dfs/verify/payment/" . $payment_ref_id;
